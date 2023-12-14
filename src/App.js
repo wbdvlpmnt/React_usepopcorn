@@ -54,10 +54,16 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
 
+  const query = "interstellar";
+
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_OMDB_URL}&s=gladiator`)
-      .then((res) => res.json())
-      .then((data) => setMovies(data.Search));
+    async function fetchData() {
+      const res = await fetch(`${process.env.REACT_APP_OMDB_URL}&s=${query}`);
+      const data = await res.json();
+      setMovies(data.Search);
+      console.log(data.Search);
+    }
+    fetchData();
   }, []);
 
   return (
