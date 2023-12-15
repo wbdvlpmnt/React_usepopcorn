@@ -52,15 +52,15 @@ const average = (arr) =>
 
 export default function App() {
   const [movies, setMovies] = useState([]);
+  const [query, setQuery] = useState("");
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const query = "interstellar";
-
   useEffect(() => {
     async function fetchData() {
       try {
+        setError("");
         setIsLoading(true);
         const res = await fetch(`${process.env.REACT_APP_OMDB_URL}&s=${query}`);
         if (!res.ok) throw new Error("Something went wrong fetching data");
@@ -76,14 +76,19 @@ export default function App() {
         setIsLoading(false);
       }
     }
+    if (query.length < 3) {
+      setMovies([]);
+      setError("");
+      return;
+    }
     fetchData();
-  }, []);
+  }, [query]);
 
   return (
     <>
       <NavBar>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -113,8 +118,7 @@ function ErrorMessage({ message }) {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
