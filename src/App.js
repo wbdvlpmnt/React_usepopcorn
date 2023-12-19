@@ -11,7 +11,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  // ("tt1375666");
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -30,19 +29,27 @@ export default function App() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchData() {
       try {
         setError("");
         setIsLoading(true);
-        const res = await fetch(`${process.env.REACT_APP_OMDB_URL}&s=${query}`);
+        const res = await fetch(
+          `${process.env.REACT_APP_OMDB_URL}&s=${query}`,
+          { signal: controller.signal }
+        );
         if (!res.ok) throw new Error("Something went wrong fetching data");
         const data = await res.json();
         console.log(data);
         if (data.Response === "False") throw new Error("Movie not found");
         setMovies(data.Search);
+        setError("");
       } catch (err) {
         console.log(err.message);
-        setError(err.message);
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -53,6 +60,10 @@ export default function App() {
       return;
     }
     fetchData();
+
+    return function () {
+      controller.abort();
+    };
   }, [query]);
 
   return (
